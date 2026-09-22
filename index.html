@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TourSpot Finder — Nearest Tourist Spot Calculator</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="header">
+    <div class="header__brand">
+      <span class="header__logo">🧭</span>
+      <div>
+        <h1>TourSpot Finder</h1>
+        <p class="header__tagline">BS Mathematics · Computer Application Project</p>
+      </div>
+    </div>
+    <button id="locateBtn" class="btn btn--primary">📍 Find My Location</button>
+  </header>
+
+  <!-- ============ MAIN LAYOUT ============ -->
+  <main class="layout">
+
+    <!-- LEFT: Map -->
+    <section class="map-panel">
+      <div id="map"></div>
+      <div id="mapLoading" class="map-loading">
+        <div class="spinner"></div>
+        <p>Loading map… (add your Google Maps API key — see README)</p>
+      </div>
+    </section>
+
+    <!-- RIGHT: Sidebar -->
+    <aside class="sidebar">
+
+      <!-- Math panel -->
+      <section class="card" id="nearestCard">
+        <h2>🏆 Nearest Tourist Spot</h2>
+        <div id="nearestInfo" class="nearest-info">
+          <p class="muted">Click “Find My Location” to compute distances.</p>
+        </div>
+      </section>
+
+      <!-- Route panel -->
+      <section class="card">
+        <h2>🗺️ Smart Tour Route</h2>
+        <p class="muted small">Uses the <em>Nearest Neighbor algorithm</em> to visit every spot with minimal backtracking.</p>
+        <button id="routeBtn" class="btn btn--accent" disabled>Calculate Optimal Route</button>
+        <div id="routeInfo" class="route-info"></div>
+      </section>
+
+      <!-- Filter -->
+      <section class="card">
+        <input type="search" id="searchBox" class="search" placeholder="🔍 Search spots… (e.g. beach, falls)" />
+        <select id="categoryFilter" class="filter">
+          <option value="all">All Categories</option>
+          <option value="beach">Beach</option>
+          <option value="nature">Nature / Park</option>
+          <option value="historical">Historical</option>
+          <option value="adventure">Adventure</option>
+        </select>
+      </section>
+
+      <!-- Spot list -->
+      <section class="card card--list">
+        <h2>📍 Tourist Spots <span id="spotCount" class="badge"></span></h2>
+        <ul id="spotList" class="spot-list"></ul>
+      </section>
+
+    </aside>
+  </main>
+
+  <!-- Hidden API loader + fallback notice -->
+  <div id="apiNotice" class="api-notice hidden">
+    ⚠️ Google Maps failed to load. Check your API key in <code>js/app.js</code> and make sure the
+    <em>Maps JavaScript API</em> is enabled in Google Cloud Console.
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
