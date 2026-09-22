@@ -1,83 +1,1599 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TourSpot Finder — Nearest Tourist Spot Calculator</title>
-  <link rel="stylesheet" href="css/style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TourSpot Finder</title>
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    background: #fff;
+}
+
+/* =========================
+   MAP
+========================= */
+
+#map {
+    width: 100%;
+    height: 100vh;
+}
+
+/* =========================
+   SEARCH
+========================= */
+
+.search-panel {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+
+    width: 390px;
+
+    background: white;
+    border-radius: 28px;
+
+    box-shadow:
+        0 2px 6px rgba(0,0,0,.25),
+        0 4px 12px rgba(0,0,0,.12);
+
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    font-size: 20px;
+    margin-left: 18px;
+}
+
+#searchBox {
+    flex: 1;
+
+    border: none;
+    outline: none;
+
+    padding: 14px;
+
+    font-size: 15px;
+}
+
+.search-button {
+    width: 45px;
+    height: 45px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: white;
+
+    font-size: 18px;
+
+    cursor: pointer;
+}
+
+.search-button:hover {
+    background: #f1f3f4;
+}
+
+/* =========================
+   FILTER
+========================= */
+
+.filter-panel {
+    position: absolute;
+
+    top: 75px;
+    left: 15px;
+
+    z-index: 1000;
+
+    background: white;
+
+    padding: 10px 14px;
+
+    border-radius: 20px;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+
+#categoryFilter {
+    border: none;
+    outline: none;
+
+    background: white;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+/* =========================
+   LEFT RESULT PANEL
+========================= */
+
+.results-panel {
+    position: absolute;
+
+    top: 125px;
+    left: 15px;
+
+    width: 390px;
+
+    max-height: calc(100vh - 150px);
+
+    background: white;
+
+    border-radius: 12px;
+
+    z-index: 900;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================
+   NEAREST
+========================= */
+
+.nearest {
+    padding: 18px;
+
+    border-bottom: 1px solid #eee;
+}
+
+.nearest-title {
+    font-size: 13px;
+
+    color: #666;
+
+    margin-bottom: 6px;
+}
+
+.nearest-name {
+    font-size: 19px;
+
+    font-weight: bold;
+
+    color: #1a73e8;
+
+    margin-bottom: 5px;
+}
+
+.nearest-distance {
+    color: #e37400;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    margin-bottom: 7px;
+}
+
+.nearest-description {
+    font-size: 13px;
+
+    color: #666;
+
+    line-height: 1.4;
+}
+
+/* =========================
+   ROUTE BUTTON
+========================= */
+
+.route-button {
+    margin-top: 12px;
+
+    width: 100%;
+
+    padding: 11px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: #1a73e8;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.route-button:hover {
+    background: #1765c1;
+}
+
+.route-button:disabled {
+    background: #ccc;
+
+    cursor: not-allowed;
+}
+
+/* =========================
+   ROUTE INFO
+========================= */
+
+.route-info {
+    padding: 15px;
+
+    border-bottom: 1px solid #eee;
+
+    max-height: 220px;
+
+    overflow-y: auto;
+}
+
+.route-info h3 {
+    font-size: 15px;
+
+    margin-bottom: 10px;
+}
+
+.route-info ol {
+    padding-left: 20px;
+}
+
+.route-info li {
+    font-size: 13px;
+
+    margin-bottom: 6px;
+}
+
+.route-total {
+    margin-top: 10px;
+
+    font-weight: bold;
+
+    color: #1a73e8;
+}
+
+/* =========================
+   SPOT LIST
+========================= */
+
+.spot-header {
+    padding: 13px 18px;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    border-bottom: 1px solid #eee;
+}
+
+.spot-list {
+    overflow-y: auto;
+
+    flex: 1;
+
+    list-style: none;
+}
+
+.spot-item {
+    padding: 13px 18px;
+
+    border-bottom: 1px solid #eee;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    cursor: pointer;
+}
+
+.spot-item:hover {
+    background: #f5f7f9;
+}
+
+.spot-name {
+    font-size: 14px;
+
+    font-weight: bold;
+}
+
+.spot-category {
+    font-size: 12px;
+
+    color: #777;
+
+    margin-top: 4px;
+}
+
+.spot-distance {
+    font-size: 12px;
+
+    color: #e37400;
+
+    font-weight: bold;
+
+    white-space: nowrap;
+}
+
+/* =========================
+   MAP CONTROLS
+========================= */
+
+.map-controls {
+    position: absolute;
+
+    right: 15px;
+    bottom: 30px;
+
+    z-index: 1000;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.map-control {
+    width: 45px;
+    height: 45px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: white;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+.map-control:hover {
+    background: #f1f3f4;
+}
+
+/* =========================
+   LOCATION BUTTON
+========================= */
+
+.location-button {
+    position: absolute;
+
+    right: 15px;
+    bottom: 85px;
+
+    z-index: 1000;
+
+    width: 48px;
+    height: 48px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: white;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+
+    font-size: 21px;
+
+    cursor: pointer;
+}
+
+.location-button:hover {
+    background: #f1f3f4;
+}
+
+/* =========================
+   MAP MARKERS
+========================= */
+
+.marker-pin {
+    font-size: 26px;
+
+    filter:
+        drop-shadow(0 2px 3px rgba(0,0,0,.35));
+}
+
+.user-pin {
+    font-size: 30px;
+
+    filter:
+        drop-shadow(0 2px 4px rgba(0,0,0,.4));
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:700px) {
+
+    .search-panel {
+        width: calc(100% - 30px);
+    }
+
+    .filter-panel {
+        top: 75px;
+    }
+
+    .results-panel {
+        top: 125px;
+
+        left: 10px;
+
+        width: calc(100% - 20px);
+
+        max-height: 45vh;
+    }
+
+    .route-info {
+        max-height: 150px;
+    }
+}
+</style>
 </head>
+
 <body>
 
-  <!-- ============ HEADER ============ -->
-  <header class="header">
-    <div class="header__brand">
-      <span class="header__logo">🧭</span>
-      <div>
-        <h1>TourSpot Finder</h1>
-        <p class="header__tagline">BS Mathematics · Computer Application Project</p>
-      </div>
-    </div>
-    <button id="locateBtn" class="btn btn--primary">📍 Find My Location</button>
-  </header>
+<!-- MAP -->
+<div id="map"></div>
 
-  <!-- ============ MAIN LAYOUT ============ -->
-  <main class="layout">
+<!-- SEARCH -->
+<div class="search-panel">
 
-    <!-- LEFT: Map -->
-    <section class="map-panel">
-      <div id="map"></div>
-      <div id="mapLoading" class="map-loading">
-        <div class="spinner"></div>
-        <p>Loading map… (add your Google Maps API key — see README)</p>
-      </div>
-    </section>
+    <span class="search-icon">🔍</span>
 
-    <!-- RIGHT: Sidebar -->
-    <aside class="sidebar">
+    <input
+        type="search"
+        id="searchBox"
+        placeholder="Search tourist spots..."
+    >
 
-      <!-- Math panel -->
-      <section class="card" id="nearestCard">
-        <h2>🏆 Nearest Tourist Spot</h2>
-        <div id="nearestInfo" class="nearest-info">
-          <p class="muted">Click “Find My Location” to compute distances.</p>
+    <button
+        class="search-button"
+        onclick="document.getElementById('searchBox').value=''; applyFilters();"
+    >
+        ✕
+    </button>
+
+</div>
+
+<!-- FILTER -->
+<div class="filter-panel">
+
+    <select id="categoryFilter">
+
+        <option value="all">
+            All places
+        </option>
+
+        <option value="historical">
+            🏛️ Historical
+        </option>
+
+        <option value="nature">
+            🌿 Nature / Park
+        </option>
+
+        <option value="adventure">
+            🎢 Adventure
+        </option>
+
+        <option value="beach">
+            🏖️ Beach
+        </option>
+
+    </select>
+
+</div>
+
+<!-- RESULTS -->
+<div class="results-panel">
+
+    <!-- NEAREST -->
+    <div class="nearest">
+
+        <div class="nearest-title">
+            NEAREST TOURIST SPOT
         </div>
-      </section>
 
-      <!-- Route panel -->
-      <section class="card">
-        <h2>🗺️ Smart Tour Route</h2>
-        <p class="muted small">Uses the <em>Nearest Neighbor algorithm</em> to visit every spot with minimal backtracking.</p>
-        <button id="routeBtn" class="btn btn--accent" disabled>Calculate Optimal Route</button>
-        <div id="routeInfo" class="route-info"></div>
-      </section>
+        <div id="nearestInfo">
 
-      <!-- Filter -->
-      <section class="card">
-        <input type="search" id="searchBox" class="search" placeholder="🔍 Search spots… (e.g. beach, falls)" />
-        <select id="categoryFilter" class="filter">
-          <option value="all">All Categories</option>
-          <option value="beach">Beach</option>
-          <option value="nature">Nature / Park</option>
-          <option value="historical">Historical</option>
-          <option value="adventure">Adventure</option>
-        </select>
-      </section>
+            <div class="nearest-description">
+                Click the location button to find the nearest tourist spot.
+            </div>
 
-      <!-- Spot list -->
-      <section class="card card--list">
-        <h2>📍 Tourist Spots <span id="spotCount" class="badge"></span></h2>
-        <ul id="spotList" class="spot-list"></ul>
-      </section>
+        </div>
 
-    </aside>
-  </main>
+        <button
+            id="routeBtn"
+            class="route-button"
+            disabled
+        >
+            🗺️ Calculate Tour Route
+        </button>
 
-  <!-- Hidden API loader + fallback notice -->
-  <div id="apiNotice" class="api-notice hidden">
-    ⚠️ Google Maps failed to load. Check your API key in <code>js/app.js</code> and make sure the
-    <em>Maps JavaScript API</em> is enabled in Google Cloud Console.
-  </div>
+    </div>
 
-  <script src="js/app.js"></script>
+    <!-- ROUTE -->
+    <div
+        id="routeInfo"
+        class="route-info"
+        style="display:none;"
+    ></div>
+
+    <!-- LIST -->
+    <div class="spot-header">
+
+        Tourist Spots
+
+        <span id="spotCount">
+            0
+        </span>
+
+    </div>
+
+    <ul
+        id="spotList"
+        class="spot-list"
+    ></ul>
+
+</div>
+
+<!-- LOCATION -->
+<button
+    id="locateBtn"
+    class="location-button"
+    title="Find my location"
+>
+    📍
+</button>
+
+<!-- MAP CONTROLS -->
+<div class="map-controls">
+
+    <button
+        class="map-control"
+        onclick="map.zoomIn()"
+    >
+        +
+    </button>
+
+    <button
+        class="map-control"
+        onclick="map.zoomOut()"
+    >
+        −
+    </button>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+/* =========================================================
+   TOURIST SPOTS
+========================================================= */
+
+const TOURIST_SPOTS = [
+
+    {
+        id: 1,
+        name: "Intramuros",
+        lat: 14.5896,
+        lng: 120.9749,
+        cat: "historical",
+        desc: "Walled city from the Spanish colonial era."
+    },
+
+    {
+        id: 2,
+        name: "Rizal Park (Luneta)",
+        lat: 14.5823,
+        lng: 120.9747,
+        cat: "historical",
+        desc: "Historic park honoring Dr. José Rizal."
+    },
+
+    {
+        id: 3,
+        name: "Manila Ocean Park",
+        lat: 14.5792,
+        lng: 120.9717,
+        cat: "nature",
+        desc: "Oceanarium and marine-themed park."
+    },
+
+    {
+        id: 4,
+        name: "Fort Santiago",
+        lat: 14.5948,
+        lng: 120.9705,
+        cat: "historical",
+        desc: "Citadel built during the Spanish era."
+    },
+
+    {
+        id: 5,
+        name: "National Museum of Fine Arts",
+        lat: 14.5869,
+        lng: 120.9812,
+        cat: "historical",
+        desc: "Home of the famous Spoliarium painting."
+    },
+
+    {
+        id: 6,
+        name: "Star City",
+        lat: 14.5686,
+        lng: 120.9894,
+        cat: "adventure",
+        desc: "Popular amusement park by the bay."
+    },
+
+    {
+        id: 7,
+        name: "Manila Baywalk",
+        lat: 14.5673,
+        lng: 120.9803,
+        cat: "nature",
+        desc: "Famous sunset promenade along Roxas Boulevard."
+    },
+
+    {
+        id: 8,
+        name: "Binondo Chinatown",
+        lat: 14.6004,
+        lng: 120.9745,
+        cat: "historical",
+        desc: "Historic Chinatown district."
+    },
+
+    {
+        id: 9,
+        name: "Paco Park",
+        lat: 14.5791,
+        lng: 120.9892,
+        cat: "nature",
+        desc: "Circular Spanish-era cemetery turned park."
+    },
+
+    {
+        id: 10,
+        name: "Casa Manila",
+        lat: 14.5899,
+        lng: 120.9750,
+        cat: "historical",
+        desc: "Museum showcasing colonial lifestyle."
+    }
+
+];
+
+
+/* =========================================================
+   ICONS
+========================================================= */
+
+const CATEGORY_ICONS = {
+
+    beach: "🏖️",
+
+    nature: "🌿",
+
+    historical: "🏛️",
+
+    adventure: "🎢"
+
+};
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let map;
+
+let userMarker = null;
+
+let routeLine = null;
+
+let userPos = null;
+
+const spotMarkers = {};
+
+
+/* =========================================================
+   HAVERSINE FORMULA
+========================================================= */
+
+function toRad(degrees) {
+
+    return degrees * Math.PI / 180;
+
+}
+
+
+function haversineKm(
+    lat1,
+    lng1,
+    lat2,
+    lng2
+) {
+
+    const R = 6371;
+
+    const dLat =
+        toRad(lat2 - lat1);
+
+    const dLng =
+        toRad(lng2 - lng1);
+
+    const a =
+        Math.sin(dLat / 2) *
+        Math.sin(dLat / 2)
+
+        +
+
+        Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+
+    return 2 *
+        R *
+        Math.asin(
+            Math.sqrt(a)
+        );
+
+}
+
+
+/* =========================================================
+   NEAREST NEIGHBOR
+========================================================= */
+
+function nearestNeighborRoute(
+    start,
+    spots
+) {
+
+    const unvisited = [...spots];
+
+    const route = [];
+
+    let current = start;
+
+    let totalKm = 0;
+
+    while (unvisited.length > 0) {
+
+        let nearestIndex = 0;
+
+        let nearestDistance = Infinity;
+
+        for (
+            let i = 0;
+            i < unvisited.length;
+            i++
+        ) {
+
+            const distance =
+                haversineKm(
+                    current.lat,
+                    current.lng,
+                    unvisited[i].lat,
+                    unvisited[i].lng
+                );
+
+            if (
+                distance <
+                nearestDistance
+            ) {
+
+                nearestDistance =
+                    distance;
+
+                nearestIndex = i;
+
+            }
+
+        }
+
+        const next =
+            unvisited.splice(
+                nearestIndex,
+                1
+            )[0];
+
+        route.push(next);
+
+        totalKm +=
+            nearestDistance;
+
+        current = next;
+
+    }
+
+    return {
+
+        route,
+
+        totalKm
+
+    };
+
+}
+
+
+/* =========================================================
+   MAP
+========================================================= */
+
+map = L.map("map").setView(
+    [14.5869, 120.9812],
+    14
+);
+
+
+L.tileLayer(
+    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+
+        maxZoom: 19,
+
+        attribution:
+            '&copy; OpenStreetMap contributors'
+
+    }
+).addTo(map);
+
+
+/* =========================================================
+   TOURIST MARKERS
+========================================================= */
+
+TOURIST_SPOTS.forEach(
+    spot => {
+
+        const icon =
+            L.divIcon({
+
+                html:
+                    `<span class="marker-pin">
+                        ${CATEGORY_ICONS[spot.cat] || "📍"}
+                     </span>`,
+
+                className:
+                    "spot-icon",
+
+                iconSize:
+                    [30, 30],
+
+                iconAnchor:
+                    [15, 28]
+
+            });
+
+
+        const marker =
+            L.marker(
+                [
+                    spot.lat,
+                    spot.lng
+                ],
+                {
+                    icon
+                }
+            )
+
+
+            .addTo(map)
+
+
+            .bindPopup(`
+
+                <h3>
+                    ${CATEGORY_ICONS[spot.cat]}
+                    ${spot.name}
+                </h3>
+
+                <p>
+                    ${spot.desc}
+                </p>
+
+                <p>
+                    Category:
+                    ${spot.cat}
+                </p>
+
+            `);
+
+
+        spotMarkers[spot.id] =
+            marker;
+
+    }
+);
+
+
+/* =========================================================
+   INITIAL LIST
+========================================================= */
+
+renderSpotList(
+    TOURIST_SPOTS
+);
+
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+document
+    .getElementById("locateBtn")
+    .addEventListener(
+        "click",
+        findUserLocation
+    );
+
+
+function findUserLocation() {
+
+    if (!navigator.geolocation) {
+
+        alert(
+            "Geolocation is not supported by your browser."
+        );
+
+        return;
+
+    }
+
+
+    const button =
+        document.getElementById(
+            "locateBtn"
+        );
+
+
+    button.textContent =
+        "⏳";
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            userPos = {
+
+                lat:
+                    position.coords.latitude,
+
+                lng:
+                    position.coords.longitude
+
+            };
+
+
+            if (userMarker) {
+
+                map.removeLayer(
+                    userMarker
+                );
+
+            }
+
+
+            userMarker =
+                L.marker(
+                    [
+                        userPos.lat,
+                        userPos.lng
+                    ],
+                    {
+
+                        icon:
+                            L.divIcon({
+
+                                html:
+                                    '<span class="user-pin">📍</span>',
+
+                                className:
+                                    "spot-icon",
+
+                                iconSize:
+                                    [34, 34],
+
+                                iconAnchor:
+                                    [17, 32]
+
+                            })
+
+                    }
+                )
+
+
+                .addTo(map)
+
+
+                .bindPopup(
+                    "<b>You are here</b>"
+                );
+
+
+            userMarker.openPopup();
+
+
+            map.setView(
+                [
+                    userPos.lat,
+                    userPos.lng
+                ],
+                15
+            );
+
+
+            computeNearest();
+
+
+            button.textContent =
+                "📍";
+
+        },
+
+        function(error) {
+
+            alert(
+                "Could not get your location: "
+                + error.message
+            );
+
+            button.textContent =
+                "📍";
+
+        },
+
+        {
+
+            enableHighAccuracy: true,
+
+            timeout: 10000
+
+        }
+
+    );
+
+}
+
+
+/* =========================================================
+   FIND NEAREST
+========================================================= */
+
+function computeNearest() {
+
+    const ranked =
+        TOURIST_SPOTS
+
+            .map(
+                spot => ({
+
+                    ...spot,
+
+                    distanceKm:
+                        haversineKm(
+                            userPos.lat,
+                            userPos.lng,
+                            spot.lat,
+                            spot.lng
+                        )
+
+                })
+            )
+
+            .sort(
+                (a, b) =>
+                    a.distanceKm -
+                    b.distanceKm
+            );
+
+
+    const nearest =
+        ranked[0];
+
+
+    document
+        .getElementById(
+            "nearestInfo"
+        )
+        .innerHTML = `
+
+            <div class="nearest-name">
+
+                ${CATEGORY_ICONS[nearest.cat]}
+
+                ${nearest.name}
+
+            </div>
+
+            <div class="nearest-distance">
+
+                ${nearest.distanceKm.toFixed(2)}
+                km away
+
+            </div>
+
+            <div class="nearest-description">
+
+                ${nearest.desc}
+
+            </div>
+
+        `;
+
+
+    renderSpotList(ranked);
+
+
+    document
+        .getElementById(
+            "routeBtn"
+        )
+        .disabled = false;
+
+}
+
+
+/* =========================================================
+   ROUTE
+========================================================= */
+
+document
+    .getElementById("routeBtn")
+    .addEventListener(
+        "click",
+        calculateRoute
+    );
+
+
+function calculateRoute() {
+
+    if (!userPos) {
+
+        return;
+
+    }
+
+
+    const result =
+        nearestNeighborRoute(
+            userPos,
+            TOURIST_SPOTS
+        );
+
+
+    const route =
+        result.route;
+
+
+    const totalKm =
+        result.totalKm;
+
+
+    const path = [
+
+        [
+            userPos.lat,
+            userPos.lng
+        ],
+
+        ...route.map(
+            spot => [
+                spot.lat,
+                spot.lng
+            ]
+        )
+
+    ];
+
+
+    if (routeLine) {
+
+        map.removeLayer(
+            routeLine
+        );
+
+    }
+
+
+    routeLine =
+        L.polyline(
+            path,
+            {
+
+                color:
+                    "#1a73e8",
+
+                weight:
+                    5,
+
+                opacity:
+                    0.85
+
+            }
+        )
+        .addTo(map);
+
+
+    map.fitBounds(
+        routeLine.getBounds(),
+        {
+
+            padding:
+                [50, 50]
+
+        }
+    );
+
+
+    const routeInfo =
+        document.getElementById(
+            "routeInfo"
+        );
+
+
+    routeInfo.style.display =
+        "block";
+
+
+    routeInfo.innerHTML = `
+
+        <h3>
+            🗺️ Tour Route
+        </h3>
+
+        <ol>
+
+            ${route.map(
+                (spot, index) => {
+
+                    const from =
+                        index === 0
+                            ? userPos
+                            : route[index - 1];
+
+
+                    const leg =
+                        haversineKm(
+                            from.lat,
+                            from.lng,
+                            spot.lat,
+                            spot.lng
+                        );
+
+
+                    return `
+
+                        <li>
+
+                            <strong>
+                                ${spot.name}
+                            </strong>
+
+                            <span
+                                style="
+                                    color:#777;
+                                "
+                            >
+
+                                +${leg.toFixed(2)}
+                                km
+
+                            </span>
+
+                        </li>
+
+                    `;
+
+                }
+            ).join("")}
+
+        </ol>
+
+        <div class="route-total">
+
+            Total distance:
+            ${totalKm.toFixed(2)} km
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+document
+    .getElementById("searchBox")
+    .addEventListener(
+        "input",
+        applyFilters
+    );
+
+
+document
+    .getElementById("categoryFilter")
+    .addEventListener(
+        "change",
+        applyFilters
+    );
+
+
+function applyFilters() {
+
+    const query =
+        document
+            .getElementById(
+                "searchBox"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    const category =
+        document
+            .getElementById(
+                "categoryFilter"
+            )
+            .value;
+
+
+    const filtered =
+        TOURIST_SPOTS.filter(
+            spot =>
+
+                (
+                    category === "all"
+                    ||
+                    spot.cat === category
+                )
+
+                &&
+
+                (
+                    query === ""
+
+                    ||
+
+                    spot.name
+                        .toLowerCase()
+                        .includes(query)
+
+                    ||
+
+                    spot.desc
+                        .toLowerCase()
+                        .includes(query)
+                )
+
+        );
+
+
+    TOURIST_SPOTS.forEach(
+        spot => {
+
+            const marker =
+                spotMarkers[spot.id];
+
+
+            const visible =
+                filtered.some(
+                    item =>
+                        item.id === spot.id
+                );
+
+
+            if (
+                visible &&
+                !map.hasLayer(marker)
+            ) {
+
+                marker.addTo(map);
+
+            }
+
+
+            if (
+                !visible &&
+                map.hasLayer(marker)
+            ) {
+
+                map.removeLayer(marker);
+
+            }
+
+        }
+    );
+
+
+    const withDistance =
+        filtered.map(
+            spot => {
+
+                if (!userPos) {
+
+                    return spot;
+
+                }
+
+
+                return {
+
+                    ...spot,
+
+                    distanceKm:
+                        haversineKm(
+                            userPos.lat,
+                            userPos.lng,
+                            spot.lat,
+                            spot.lng
+                        )
+
+                };
+
+            }
+        );
+
+
+    if (userPos) {
+
+        withDistance.sort(
+            (a, b) =>
+                a.distanceKm -
+                b.distanceKm
+        );
+
+    }
+
+
+    renderSpotList(
+        withDistance
+    );
+
+}
+
+
+/* =========================================================
+   SPOT LIST
+========================================================= */
+
+function renderSpotList(
+    spots
+) {
+
+    document
+        .getElementById(
+            "spotCount"
+        )
+        .textContent =
+        `(${spots.length})`;
+
+
+    const list =
+        document.getElementById(
+            "spotList"
+        );
+
+
+    list.innerHTML = "";
+
+
+    spots.forEach(
+        spot => {
+
+            const item =
+                document.createElement(
+                    "li"
+                );
+
+
+            item.className =
+                "spot-item";
+
+
+            item.innerHTML = `
+
+                <div>
+
+                    <div class="spot-name">
+
+                        ${CATEGORY_ICONS[spot.cat] || "📍"}
+
+                        ${spot.name}
+
+                    </div>
+
+                    <div class="spot-category">
+
+                        ${spot.cat}
+
+                    </div>
+
+                </div>
+
+
+                <div class="spot-distance">
+
+                    ${
+                        spot.distanceKm
+                            ? spot.distanceKm.toFixed(2)
+                              + " km"
+                            : ""
+                    }
+
+                </div>
+
+            `;
+
+
+            item.addEventListener(
+                "click",
+                function() {
+
+                    map.setView(
+                        [
+                            spot.lat,
+                            spot.lng
+                        ],
+                        16
+                    );
+
+
+                    spotMarkers[
+                        spot.id
+                    ].openPopup();
+
+                }
+            );
+
+
+            list.appendChild(
+                item
+            );
+
+        }
+    );
+
+}
+
+</script>
+
 </body>
 </html>
+```
